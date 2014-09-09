@@ -1,12 +1,22 @@
 package com.otabi.iaroc.maze.model;
 
 import com.otabi.iaroc.maze.Navigator;
+import com.otabi.iaroc.maze.model.Robot.Turn;
 
 /**
  * Created by Stephen on 5/31/2014.
  */
 public class Robot {
-    private Orientation currentOrientation = Orientation.EAST;
+	public enum Turn {
+		LEFT ('L'), RIGHT ('R'), NO ('N'), U ('U');
+		
+		private char identifier;
+		Turn(char identifier) {
+			this.identifier = identifier;
+		}
+	};
+
+	private Orientation currentOrientation = Orientation.EAST;
     private Position currentPosition = null;
     private Maze maze;
     private Navigator navigator;
@@ -32,9 +42,6 @@ public class Robot {
             throw new RobotHitsWallException();
         }
         currentPosition.move(currentOrientation);
-		if (navigator != null) {
-			navigator.recordMove('F');
-		}
     }
 
     public boolean isWallLeft() throws MazeNotBuiltException {
@@ -63,6 +70,19 @@ public class Robot {
 		}
    }
     
+    public void turnAround() {
+        currentOrientation = currentOrientation.turnAround();
+		if (navigator != null) {
+			navigator.recordMove('U');
+		}
+   }
+    
+    public void noTurn() {
+		if (navigator != null) {
+			navigator.recordMove('N');
+		}
+   }  
+    
     public boolean isAtEnd() {
         return maze.atEnd(currentPosition);
     }
@@ -75,5 +95,40 @@ public class Robot {
 			System.err.println("You must have a navigator for this function.");
 		}
 		return path;
+	}
+
+	public boolean isAtStart() {
+        return maze.atStart(currentPosition);
+	}
+
+	public boolean isWall(Turn direction) throws MazeNotBuiltException {
+		switch (direction) {
+		case RIGHT:
+			return isWallRight();
+		case LEFT:
+			return isWallLeft();
+		case NO:
+			return isWallFront();
+		case U:
+			return false;
+		}
+		return false;
+	}
+
+	public void turn(Turn direction) {
+		switch (direction) {
+		case RIGHT:
+			turnRight();
+			break;
+		case LEFT:
+			turnLeft();
+			break;
+		case NO:
+			noTurn();
+			break;
+		case U:
+			turnAround();
+			break;
+		}
 	}
 }
