@@ -3,7 +3,9 @@ package com.otabi.iaroc.maze;
 
 import com.otabi.iaroc.maze.model.Maze;
 import com.otabi.iaroc.maze.model.MazeNotBuiltException;
+import com.otabi.iaroc.maze.model.Orientation;
 import com.otabi.iaroc.maze.model.Robot;
+import com.otabi.iaroc.maze.model.Robot.Turn;
 import com.otabi.iaroc.maze.model.RobotHitsWallException;
 
 
@@ -24,28 +26,53 @@ public class MazeSolver {
             /*
              *  Right hand rule to navigate robot 'myRobot' through the maze
              */
-            if (!myRobot.isWallRight()) {
-            	myRobot.turnRight();
-            } else if (myRobot.isWallFront()) {
-            	myRobot.turnLeft();
-            	if (myRobot.isWallFront()) {
-            		myRobot.turnLeft();
-            		// Hint: Two left turns makes a U-Turn 
+            Turn primaryDirection = Turn.RIGHT;
+            Turn alternateDirection = Turn.LEFT;
+            if (!myRobot.isWall(primaryDirection)) {
+            	myRobot.turn(primaryDirection);
+            } else if (!myRobot.isWallFront()) {
+            	myRobot.turn(Turn.NO);
+            } else {
+            	if (!myRobot.isWall(alternateDirection)) {
+            		myRobot.turn(alternateDirection);
+            	} else {
+	            	myRobot.turn(Turn.U);
             	} 
             }
             myRobot.move();
             moves++;
         }
 
-        // Navigate back to the beginning of the maze
-        
-        String returnPath = myRobot.returnToStart();
+        System.out.println();
         System.out.println("Solved in " + moves + " moves.");
+        
+        // Navigate back to the beginning of the maze
+        String returnPath = myRobot.returnToStart();
+        myRobot.turn(Turn.U);
+        
         int count = 0;
         for (char a: returnPath.toCharArray()) {
-        	if (a == 'F') count++;
+        	// Move first, then turn
+        	myRobot.move();
+
+        	switch (a) {
+        	case 'L':
+        		myRobot.turn(Turn.LEFT);
+        		break;
+        	case 'R':
+        		myRobot.turn(Turn.RIGHT);
+        		break;
+        	case 'U':
+        		myRobot.turn(Turn.U);
+        		break;
+        	}
+        	count++;
         }
-        System.out.println("Return path is " + count + " moves.");
+        if (myRobot.isAtStart()) {
+            System.out.println("Return to start in " + count + " moves.");
+        } else {
+        	System.out.println("Return path failed!");
+        }
         return (moves);
     }
 }
