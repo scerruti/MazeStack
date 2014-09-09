@@ -136,4 +136,8 @@ public class Maze {
         }
         System.out.println(sb.toString());
     }
+
+	public boolean atStart(Position currentPosition) {
+        return currentPosition.equals(startPostion);
+	}
 }
